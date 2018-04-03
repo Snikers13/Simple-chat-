@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<meta charset="UTF-8">
+	<title>hello world</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script src='/socket.io/socket.io.js'></script>
+</head>
+<body>
+<script>
+	let socket = io();
+	
+	function setUsername() {
+			socket.emit('setUsername', document.getElementById('name').value);
+	}
+
+	let user;
+
+	socket.on('userEmpty', data => {
+		document.getElementById('err').innerHTML = data;
+	})
+
+	socket.on('userExists', data => {
+		document.getElementById('error').innerHTML = data;
+	})
+
+
+	socket.on('userSet', data => {
+		user = data.userName;
+		document.body.innerHTML = '\
+			<div class="container" \
+			<div class="row"> \
+				<div class="col-lg-6 offset-lg-3"> \
+					<div class="form-group"> \
+					<p></p>\
+						<input type="text" class="form-control" id="message" placeholder="Write here.."> \
+						<p></p>\
+							<button type="button" class="btn btn-primary btn-block" name="button" onclick="sendMessage()">Send</button> \
+								<div id="message-container" class="well"></div>\
+							</div> \
+						</div> \
+					</div> \
+				</div>';
+	})
+
+	function sendMessage() {
+		let messageData = document.getElementById('message').value;
+		if (messageData) {
+			socket.emit('message', {user: user, message: messageData})
+		}
+
+		document.getElementById('message').value = '';
+	}
+	socket.on('newMessage', data => {
+		if (user) {
+			document.getElementById('message-container').innerHTML += '<div><b>' + data.user + '</b>: ' + data.message + '</div>';
+		} 
+	})
+</script>
+<div class="container">
+	<div class="row">
+		<div class="col-lg-6 offset-lg-3">
+			<div id="error"></div>
+			<div id="err"></div>
+			<div class="form-group">
+				<label for="name">Go chating</label>
+				<input type="text" class="form-control" name="focusedInput" id="name" placeholder="Write your name, stranger!">
+				<p></p>
+				<button type="submit" class="btn btn-primary btn-block" name="button" onclick="setUsername()">Let`s go</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
